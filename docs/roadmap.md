@@ -9,19 +9,21 @@
 - 验收：`success=True`，单条 ≤ 600 步
 - 状态：`tests/test_sim.py::test_oracle_picks_the_cube` 已覆盖
 
-## M1 · 数据采集（进行中）
+## M1 · 数据采集（已完成）
 
 - 随机化：方块位置 ±5 cm、桌垫/方块颜色、光照强度、相机机位 ±4 cm
 - 采集 200–500 条，存 episode 格式（两路图像 + proprio + 动作 + success）
 - 命令：`python -m kitebench.sim.collect --episodes 20 --out episodes`
 - 验收：成功率 ≥ 90%，随机种子固定可复现
-- 状态：采集器已完成，烟测 3/3 成功；正在跑批量统计
+- 状态：**200/200 成功**（seed 100–299），合计 213 条（含评测用 seed 0–12），约 112 MB，每条 800 步、20 组两路帧
 
-## M2 · 输入层扰动评测（不依赖 GPU）
+## M2 · 输入层扰动评测（已完成首版）
 
 - 实现 §3 的 12 类图像扰动，全部带 seed
 - 对单帧集跑"干净 vs 扰动"的动作漂移，输出 md/csv 表
 - 验收：每类扰动 ≥ 5 档，表格含 Δpos / Δrot / grip_flip
+- 状态：**46 组配置**跑完，结果见 [`perturb-baseline.md`](perturb-baseline.md)
+- 关键结论：固定去噪 seed 后噪声底为 0；模糊（3 px → 70 mm）与遮挡（10% 面积 → 夹爪翻转 31%）最危险，光度变化基本无害
 
 ## M3 · 轻量微调
 
