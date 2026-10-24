@@ -89,7 +89,9 @@ class XVLAAdapter:
         self.torch = torch
         self.seed = seed
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        self.dtype = torch.float16 if self.device == "cuda" else torch.float32
+        # XVLA pins its Florence2 backbone to float32 in __init__, so half precision
+        # on the inputs fails with "Input type (Half) and bias type (float)".
+        self.dtype = torch.float32
         self.model = AutoModel.from_pretrained(
             str(model_path), trust_remote_code=True, torch_dtype=self.dtype
         ).eval().to(self.device)
