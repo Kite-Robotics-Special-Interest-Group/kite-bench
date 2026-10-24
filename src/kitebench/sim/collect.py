@@ -1,4 +1,4 @@
-"""Randomised episode collection for imitation learning.
+﻿"""Randomised episode collection for imitation learning.
 
 Each episode rebuilds the scene with a jittered cube position, table/cube colours,
 light intensity and camera offset, runs the scripted oracle, then dumps states,
@@ -21,6 +21,7 @@ from kitebench.sim.oracle import run_pick
 from kitebench.sim.scene import CUBE_SIZE, CUBE_XY, IMAGE_SIZE, build
 
 INSTRUCTION = "pick up the red block"
+GRIP_THRESHOLD = 0.026  # commanded 0.016 (closed) vs 0.037 (open)
 
 
 def vary(rng: np.random.Generator) -> tuple[tuple[float, float], dict]:
@@ -47,21 +48,26 @@ def rot_to_6d(r: np.ndarray) -> np.ndarray:
     return np.array([b1[0], b2[0], b1[1], b2[1], b1[2], b2[2]])
 
 
-def collect_episode(seed: int, out_dir: Path, frame_every: int = 20,
-                    steps_per_phase: int = 200) -> dict:
+def collect_episode(seed: int, out_dir: Path, frame_every: int = 4,
+                    steps_per_phase: int = 600, record_every: int = 25) -> dict:
     import mujoco
 
     rng = np.random.default_rng(seed)
     cube_xy, variant = vary(rng)
     model = build(cube_xy, variant)
     data = mujoco.MjData(model)
-    episode = run_pick(model, data, steps_per_phase=steps_per_phase)
+    episode = run_pick(model, data, steps_per_phase=steps_per_phase, record_every=record_every)
 
     ep_dir = out_dir / f"{seed:04d}"
     (ep_dir / "obs").mkdir(parents=True, exist_ok=True)
 
     actions = np.stack([
-        np.concatenate([s["ee"], rot_to_6d(s["ee_rot"]), [s["grip"]]]) for s in episode.states
+        np.concatenate([
+            s["ee"],
+            rot_to_6d(s["ee_rot"]),
+            [1.0 if s["grip"] < GRIP_THRESHOLD else 0.0],  # BCE target, not metres
+        ])
+        for s in episode.states
     ]).astype(np.float32)
     proprio = np.stack(episode.proprio).astype(np.float32)
     np.save(ep_dir / "action.npy", actions)
@@ -90,6 +96,7 @@ def collect_episode(seed: int, out_dir: Path, frame_every: int = 20,
         "success": bool(episode.success),
         "cube_z_final": round(float(episode.cube_z), 4),
         "steps": len(episode.states),
+        "record_every": record_every,
         "frames": frames,
         "action_layout": "[ee_xyz(3), rot6d(6), grip(1)]",
     }
@@ -102,14 +109,16 @@ def main() -> int:
     parser.add_argument("--episodes", type=int, default=5)
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--out", type=Path, default=Path("episodes"))
-    parser.add_argument("--frame-every", type=int, default=20)
-    parser.add_argument("--steps-per-phase", type=int, default=200)
+    parser.add_argument("--record-every", type=int, default=25)
+    parser.add_argument("--frame-every", type=int, default=4)
+    parser.add_argument("--steps-per-phase", type=int, default=600)
     args = parser.parse_args()
 
     args.out.mkdir(parents=True, exist_ok=True)
     ok = 0
     for i in range(args.start, args.start + args.episodes):
-        meta = collect_episode(i, args.out, args.frame_every, args.steps_per_phase)
+        meta = collect_episode(i, args.out, args.frame_every, args.steps_per_phase,
+                                  args.record_every)
         ok += int(meta["success"])
         print(json.dumps({"seed": i, "success": meta["success"],
                           "cube_z": meta["cube_z_final"]}, ensure_ascii=False))
@@ -119,3 +128,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+
+

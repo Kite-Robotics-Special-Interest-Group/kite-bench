@@ -1,4 +1,4 @@
-"""Scripted pick-and-lift oracle used to generate imitation-learning demos."""
+﻿"""Scripted pick-and-lift oracle used to generate imitation-learning demos."""
 
 from __future__ import annotations
 
@@ -72,7 +72,13 @@ def reset(model, data) -> None:
         mujoco.mj_step(model, data)
 
 
-def run_pick(model, data, steps_per_phase: int = 250) -> Episode:
+def run_pick(model, data, steps_per_phase: int = 250, record_every: int = 1) -> Episode:
+    """Run the scripted pick.
+
+    ``record_every`` decouples the control rate from the physics rate: one recorded
+    step means ``record_every`` simulation steps. With dt=2 ms, ``record_every=25``
+    gives a 20 Hz control signal, so a 30-step chunk spans ~1.5 s like Bridge.
+    """
     import mujoco
 
     reset(model, data)
@@ -93,15 +99,17 @@ def run_pick(model, data, steps_per_phase: int = 250) -> Episode:
     def drive(joints: np.ndarray, grip: float, n: int) -> None:
         data.ctrl[0:6] = joints
         data.ctrl[6] = grip
-        for _ in range(n):
+        gid = _gid(model)
+        for step in range(n):
             mujoco.mj_step(model, data)
-            gid = _gid(model)
+            if step % record_every != 0:
+                continue
             episode.proprio.append(np.concatenate([data.qpos[0:6].copy(), [grip]]))
             episode.states.append({
                 "qpos": data.qpos.copy(),
                 "ee": data.xpos[gid].copy(),
                 "ee_rot": data.xmat[gid].reshape(3, 3).copy(),
-                "grip": float(data.qpos[6]),
+                "grip": float(grip),  # commanded, not the blocked finger position
             })
 
     drive(q_hover, GRIP_OPEN, steps_per_phase)
@@ -112,3 +120,4 @@ def run_pick(model, data, steps_per_phase: int = 250) -> Episode:
     episode.cube_z = float(data.qpos[10])
     episode.success = episode.cube_z > LIFT_OK
     return episode
+

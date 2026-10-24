@@ -70,6 +70,8 @@ drift = distance(a_clean, a_p)
 
 ## 5. 数据流
 
+**控制频率是数据格式的一部分。** MuJoCo 的 `dt = 2 ms`，如果按物理步记录动作，一个 30 步动作块只覆盖 0.06 s，模型会学成"下一帧几乎不动"。所以采集时用 `record_every=25`（20 Hz 控制），30 步对应约 1.5 s，与 Bridge 量级一致；闭环回放时每个动作也走 25 个物理步。
+
 ```
 MuJoCo/MoJoCo+Unity ──► episodes (obs, proprio, action, success)
         │

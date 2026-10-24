@@ -1,4 +1,4 @@
-"""Perturbation sweep: measure how far model actions drift when the input changes.
+﻿"""Perturbation sweep: measure how far model actions drift when the input changes.
 
 The policy is injected, so the harness does not depend on any specific model. A
 reference adapter for X-VLA checkpoints is provided and only imports
@@ -82,7 +82,7 @@ class XVLAAdapter:
     """Reference adapter for an X-VLA checkpoint (``ee6d`` WidowX edition)."""
 
     def __init__(self, model_path: str | Path, steps: int = 5, device: str | None = None,
-                 seed: int | None = 0):
+                 seed: int | None = 0, head: str | Path | None = None):
         import torch
         from transformers import AutoModel, AutoProcessor
 
@@ -95,6 +95,10 @@ class XVLAAdapter:
         self.model = AutoModel.from_pretrained(
             str(model_path), trust_remote_code=True, torch_dtype=self.dtype
         ).eval().to(self.device)
+        if head:
+            state = torch.load(str(head), map_location=self.device, weights_only=False)
+            self.model.transformer.load_state_dict(state["transformer"])
+            print(f"loaded head {head} (epoch {state.get('epoch', '?')})", flush=True)
         self.processor = AutoProcessor.from_pretrained(str(model_path), trust_remote_code=True)
         self.steps = steps
 
@@ -128,7 +132,8 @@ def run_sweep(policy: Policy, frames: list[Frame], out_md: Path) -> list[dict]:
     baseline = {"family": "baseline_repeat", "level": "-", **metrics.summarise(repeat)}
     rows.append(baseline)
     print(f"{'baseline_repeat':14s} {'-':22s} pos={baseline['pos_mm_mean']:7.2f}mm "
-          f"rot={baseline['rot_deg_mean']:6.2f}° flip={baseline['grip_flip_mean']:.2f}", flush=True)
+          f"rot={baseline['rot_deg_mean']:6.2f}deg flip={baseline['grip_flip_mean']:.2f}",
+          flush=True)
 
     registry = perturb.registry()
     for family, levels in LEVELS.items():
@@ -148,7 +153,7 @@ def run_sweep(policy: Policy, frames: list[Frame], out_md: Path) -> list[dict]:
             }
             rows.append(row)
             print(f"{row['family']:14s} {row['level']:22s} "
-                  f"pos={row['pos_mm_mean']:7.2f}mm rot={row['rot_deg_mean']:6.2f}° "
+                  f"pos={row['pos_mm_mean']:7.2f}mm rot={row['rot_deg_mean']:6.2f}deg "
                   f"flip={row['grip_flip_mean']:.2f}", flush=True)
     out_md.parent.mkdir(parents=True, exist_ok=True)
     out_md.write_text(to_markdown(rows, len(frames)), encoding="utf-8")
@@ -177,6 +182,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="input perturbation sweep")
     parser.add_argument("--episodes", type=Path, default=Path("out/episodes"))
     parser.add_argument("--model", type=str, required=True)
+    parser.add_argument("--head", type=Path, default=None,
+                        help="fine-tuned transformer state dict (out/head_ft.pt)")
     parser.add_argument("--frames", type=int, default=3)
     parser.add_argument("--steps", type=int, default=5)
     parser.add_argument("--out", type=Path, default=Path("out/perturb.md"))
@@ -188,7 +195,7 @@ def main() -> int:
     frames = load_frames(args.episodes, args.frames)
     print(f"frames: {[(f.episode, f.step) for f in frames]}", flush=True)
     policy = XVLAAdapter(args.model, steps=args.steps,
-                         seed=None if args.seed < 0 else args.seed)
+                         seed=None if args.seed < 0 else args.seed, head=args.head)
     rows = run_sweep(policy, frames, args.out)
     if args.json:
         args.json.write_text(json.dumps(rows, indent=2, ensure_ascii=False), encoding="utf-8")
