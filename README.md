@@ -63,6 +63,15 @@ for name, fn in perturb.registry().items():
     print(name, fn(img, seed=0).size)
 ```
 
+采集示教（带域随机化）：
+
+```bash
+python -m kitebench.sim.collect --episodes 20 --out episodes
+# episodes/0000/{meta.json, action.npy, proprio.npy, obs/*_front.png, *_wrist.png}
+```
+
+每条 episode 随机化方块位置（±5 cm）、桌垫/方块颜色、光照强度与相机机位；动作标签是绝对末端位姿 `[ee_xyz(3), rot6d(6), grip(1)]`。
+
 ## 与 Kite 的关系
 
 - `Kite`：端侧 VLA 模型与运行时（机器人本体）

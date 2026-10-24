@@ -21,6 +21,7 @@ class Episode:
     cube_z: float
     actions: list[np.ndarray] = field(default_factory=list)
     proprio: list[np.ndarray] = field(default_factory=list)
+    states: list[dict] = field(default_factory=list)
 
 
 def _gid(model):
@@ -94,7 +95,14 @@ def run_pick(model, data, steps_per_phase: int = 250) -> Episode:
         data.ctrl[6] = grip
         for _ in range(n):
             mujoco.mj_step(model, data)
+            gid = _gid(model)
             episode.proprio.append(np.concatenate([data.qpos[0:6].copy(), [grip]]))
+            episode.states.append({
+                "qpos": data.qpos.copy(),
+                "ee": data.xpos[gid].copy(),
+                "ee_rot": data.xmat[gid].reshape(3, 3).copy(),
+                "grip": float(data.qpos[6]),
+            })
 
     drive(q_hover, GRIP_OPEN, steps_per_phase)
     drive(q_grasp, GRIP_OPEN, steps_per_phase)

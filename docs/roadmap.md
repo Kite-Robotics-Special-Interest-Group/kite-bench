@@ -9,11 +9,13 @@
 - 验收：`success=True`，单条 ≤ 600 步
 - 状态：`tests/test_sim.py::test_oracle_picks_the_cube` 已覆盖
 
-## M1 · 数据采集
+## M1 · 数据采集（进行中）
 
-- 随机化方块位置（桌面内 ±5 cm）与初始关节角
-- 采集 200–500 条，存 episode 格式（图像 + proprio + action + success）
+- 随机化：方块位置 ±5 cm、桌垫/方块颜色、光照强度、相机机位 ±4 cm
+- 采集 200–500 条，存 episode 格式（两路图像 + proprio + 动作 + success）
+- 命令：`python -m kitebench.sim.collect --episodes 20 --out episodes`
 - 验收：成功率 ≥ 90%，随机种子固定可复现
+- 状态：采集器已完成，烟测 3/3 成功；正在跑批量统计
 
 ## M2 · 输入层扰动评测（不依赖 GPU）
 
