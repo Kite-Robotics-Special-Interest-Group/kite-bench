@@ -89,10 +89,20 @@ def run_pick(model, data, steps_per_phase: int = 250, record_every: int = 1) -> 
     hover = np.array([cube[0], cube[1], cube[2] + 0.22])
     grasp = np.array([cube[0], cube[1], cube[2] + 0.066])  # fingertips ~6.6 cm below
     lift = np.array([cube[0], cube[1], cube[2] + 0.24])
+    # carry the cube sideways after lifting: without this the trajectory revisits the
+    # same poses on the way down and up, so a single-frame policy cannot tell whether
+    # it is approaching or retreating and settles into a down-up cycle
+    carry = np.array([cube[0] + 0.02, cube[1] + 0.14, cube[2] + 0.26])
 
     q_hover = ik(model, data, hover, q)
     q_grasp = ik(model, data, grasp, q_hover)
     q_lift = ik(model, data, lift, q_grasp)
+    q_carry = ik(model, data, carry, q_lift)
+
+    # IK leaves the simulation sitting at the last solved pose; without this reset the
+    # episode would start at the carry pose and every demo would be a closed loop
+    reset(model, data)
+    cube = data.xpos[cid].copy()
 
     episode = Episode(success=False, cube_z=float(cube[2]))
 
@@ -116,6 +126,7 @@ def run_pick(model, data, steps_per_phase: int = 250, record_every: int = 1) -> 
     drive(q_grasp, GRIP_OPEN, steps_per_phase)
     drive(q_grasp, GRIP_CLOSED, steps_per_phase)
     drive(q_lift, GRIP_CLOSED, steps_per_phase)
+    drive(q_carry, GRIP_CLOSED, steps_per_phase)
 
     episode.cube_z = float(data.qpos[10])
     episode.success = episode.cube_z > LIFT_OK

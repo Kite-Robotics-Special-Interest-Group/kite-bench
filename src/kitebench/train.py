@@ -103,6 +103,8 @@ def main() -> int:
                         help="train only the last N transformer blocks (0 = all)")
     parser.add_argument("--features", type=Path, default=None,
                         help="precomputed VLM features; skips the backbone at train time")
+    parser.add_argument("--init", type=Path, default=None,
+                        help="checkpoint to continue from (loads the transformer only)")
     args = parser.parse_args()
 
     import torch
@@ -122,6 +124,10 @@ def main() -> int:
         p.requires_grad_(False)
     model.vlm.eval()
     model.transformer.train()
+    if args.init:
+        state = torch.load(str(args.init), map_location=device, weights_only=False)
+        model.transformer.load_state_dict(state["transformer"])
+        print(f"resumed from {args.init} (epoch {state.get('epoch', '?')})", flush=True)
     if args.train_blocks:
         blocks = model.transformer.blocks
         keep = len(blocks) - args.train_blocks
