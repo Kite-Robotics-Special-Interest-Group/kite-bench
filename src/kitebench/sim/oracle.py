@@ -12,6 +12,7 @@ READY = np.array([0.0, -0.70, 0.96, 0.0, -0.44, 0.0])
 GRIP_OPEN = 0.037
 GRIP_CLOSED = 0.016
 LIFT_OK = 2 * CUBE_SIZE + 0.02
+POSTURE_WEIGHT = 0.35
 TOP_DOWN = np.array([[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]])
 
 
@@ -50,12 +51,15 @@ def ik(model, data, target: np.ndarray, q0: np.ndarray, iters: int = 400) -> np.
         ep = target - data.xpos[bid]
         er = _rotvec(TOP_DOWN @ data.xmat[bid].reshape(3, 3).T)
         err = np.concatenate([ep, 0.5 * er])
-        if np.linalg.norm(err) < 1e-3:
-            break
         jacp = np.zeros((3, model.nv))
         jacr = np.zeros((3, model.nv))
         mujoco.mj_jacBody(model, data, jacp, jacr, bid)
         j = np.vstack([jacp[:, 0:6], 0.5 * jacr[:, 0:6]])
+        if np.linalg.norm(err) < 1e-3:
+            break
+        # bias toward the seed posture: the same EE pose has several IK branches
+        # (elbow up/down) and picking a different one changes the whole approach
+        err = err + POSTURE_WEIGHT * (j @ (q0 - q))
         dq = j.T @ np.linalg.solve(j @ j.T + 0.01 * np.eye(6), err)
         q = np.clip(q + 0.4 * dq, model.jnt_range[0:6, 0], model.jnt_range[0:6, 1])
     return q
@@ -132,6 +136,7 @@ def run_pick(model, data, steps_per_phase: int = 250, record_every: int = 1) -> 
     episode.cube_z = float(data.qpos[10])
     episode.success = episode.cube_z > LIFT_OK
     return episode
+
 
 
 
