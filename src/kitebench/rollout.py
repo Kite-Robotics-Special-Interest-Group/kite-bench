@@ -22,7 +22,8 @@ from kitebench.sim.scene import CUBE_XY, IMAGE_SIZE, build, render
 INSTRUCTION = "pick up the red block"
 
 
-def rollout(model, data, policy, chunks: int, steps_per_action: int = 25) -> dict:
+def rollout(model, data, policy, chunks: int, steps_per_action: int = 25,
+            exec_steps: int = 10) -> dict:
     import mujoco
 
     reset(model, data)
@@ -35,7 +36,7 @@ def rollout(model, data, policy, chunks: int, steps_per_action: int = 25) -> dic
         proprio[0:3] = data.xpos[gid]
         proprio[3:10] = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
         chunk = policy.act(image, proprio, INSTRUCTION)
-        for step in range(chunk.shape[0]):
+        for step in range(min(exec_steps, chunk.shape[0])):
             target = np.clip(chunk[step, 0:3], -0.5, 0.6)
             target[2] = max(target[2], 0.01)
             q = ik(model, data, target, data.qpos[0:6].copy(), iters=60)
@@ -60,6 +61,8 @@ def main() -> int:
     parser.add_argument("--start", type=int, default=300, help="first episode seed (unseen)")
     parser.add_argument("--chunks", type=int, default=6)
     parser.add_argument("--steps", type=int, default=25)
+    parser.add_argument("--exec", type=int, default=10,
+                        help="execute only the first N actions of each chunk")
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
 
@@ -75,7 +78,7 @@ def main() -> int:
                    CUBE_XY[1] + float(rng.uniform(-0.05, 0.05)))
         model = build(cube_xy)
         data = mujoco.MjData(model)
-        res = rollout(model, data, policy, args.chunks, args.steps)
+        res = rollout(model, data, policy, args.chunks, args.steps, args.exec)
         res["cube_xy"] = [round(cube_xy[0], 3), round(cube_xy[1], 3)]
         results.append(res)
         print(json.dumps({"seed": seed, **res}), flush=True)
@@ -90,5 +93,6 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 

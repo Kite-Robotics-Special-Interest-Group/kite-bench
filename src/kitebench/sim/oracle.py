@@ -88,7 +88,8 @@ def run_pick(model, data, steps_per_phase: int = 250, record_every: int = 1) -> 
 
     hover = np.array([cube[0], cube[1], cube[2] + 0.22])
     grasp = np.array([cube[0], cube[1], cube[2] + 0.066])  # fingertips ~6.6 cm below
-    lift = np.array([cube[0], cube[1], cube[2] + 0.24])
+    # lift diagonally (not vertically) so the ascent never retraces the descent
+    lift = np.array([cube[0] + 0.01, cube[1] + 0.07, cube[2] + 0.18])
     # carry the cube sideways after lifting: without this the trajectory revisits the
     # same poses on the way down and up, so a single-frame policy cannot tell whether
     # it is approaching or retreating and settles into a down-up cycle
@@ -131,4 +132,6 @@ def run_pick(model, data, steps_per_phase: int = 250, record_every: int = 1) -> 
     episode.cube_z = float(data.qpos[10])
     episode.success = episode.cube_z > LIFT_OK
     return episode
+
+
 
