@@ -87,7 +87,7 @@ def run_pick(model, data, steps_per_phase: int = 250, record_every: int = 1) -> 
     q = data.qpos[0:6].copy()
 
     hover = np.array([cube[0], cube[1], cube[2] + 0.22])
-    grasp = np.array([cube[0], cube[1], cube[2] + 0.066])  # fingertips ~6.6 cm below
+    grasp = np.array([cube[0], cube[1], cube[2] + 0.056])  # 1 cm deeper than the fingertip offset
     # lift diagonally (not vertically) so the ascent never retraces the descent
     lift = np.array([cube[0] + 0.01, cube[1] + 0.07, cube[2] + 0.18])
     # carry the cube sideways after lifting: without this the trajectory revisits the
@@ -132,6 +132,7 @@ def run_pick(model, data, steps_per_phase: int = 250, record_every: int = 1) -> 
     episode.cube_z = float(data.qpos[10])
     episode.success = episode.cube_z > LIFT_OK
     return episode
+
 
 
 

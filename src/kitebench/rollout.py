@@ -30,6 +30,8 @@ def rollout(model, data, policy, chunks: int, steps_per_action: int = 25,
     gid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "wx250s/gripper_link")
     best = 0.0
 
+    prev_grip_closed = False
+    hold = 0
     for _ in range(chunks):
         image = render(model, data, "front", IMAGE_SIZE)
         proprio = np.zeros(20, dtype=np.float32)
@@ -39,9 +41,16 @@ def rollout(model, data, policy, chunks: int, steps_per_action: int = 25,
         for step in range(min(exec_steps, chunk.shape[0])):
             target = np.clip(chunk[step, 0:3], -0.5, 0.6)
             target[2] = max(target[2], 0.01)
-            q = ik(model, data, target, data.qpos[0:6].copy(), iters=60)
+            closing = chunk[step, 9] >= 0.5
+            if closing and not prev_grip_closed:
+                hold = 5  # let the fingers settle before the arm moves away
+            prev_grip_closed = closing
+            if hold > 0:
+                hold -= 1
+                target = data.xpos[gid].copy()
+            q = ik(model, data, target, data.qpos[0:6].copy(), iters=200)
             data.ctrl[0:6] = q
-            data.ctrl[6] = GRIP_CLOSED if chunk[step, 9] >= 0.91 else GRIP_OPEN
+            data.ctrl[6] = GRIP_CLOSED if closing else GRIP_OPEN
             for _ in range(steps_per_action):
                 mujoco.mj_step(model, data)
             best = max(best, float(data.qpos[10]))
@@ -93,6 +102,9 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+
 
 
 
