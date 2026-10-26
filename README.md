@@ -98,15 +98,16 @@ python -m kitebench.sim.collect --episodes 20 --out episodes
 
 ## 本地路径
 
+仓库内容直接点上面的文档索引；下面这些是**本机目录**（用等宽文本，不做超链接，避免网页上失效）：
+
 | 内容 | 路径 |
 | --- | --- |
-| 本仓库 | [`D:\JLU_tools\kite-bench`](file:///D:/JLU_tools/kite-bench) |
-| 主仓 | [`D:\JLU_tools\Kite`](file:///D:/JLU_tools/Kite) |
-| Unity / 视频 | [`D:\JLU_tools\kite-showcase`](file:///D:/JLU_tools/kite-showcase) |
-| 周报 | [`D:\JLU_tools\kite-weekly`](file:///D:/JLU_tools/kite-weekly) |
-| 示教数据 | [`out/episodes_v4`](file:///D:/JLU_tools/kite-bench/out/episodes_v4) |
-| 微调权重 | [`out/head_v7.pt`](file:///D:/JLU_tools/kite-bench/out/head_v7.pt) |
-
+| 本仓库 | `D:\JLU_tools\kite-bench` |
+| 主仓 | `D:\JLU_tools\Kite` |
+| Unity / 视频 | `D:\JLU_tools\kite-showcase` |
+| 周报 | `D:\JLU_tools\kite-weekly` |
+| 示教数据 | `out/episodes_v4`（本地，未入库） |
+| 微调权重 | `out/head_v7.pt`（本地，未入库） |
 ## 与 Kite 的关系
 
 - `Kite`：端侧 VLA 模型与运行时（机器人本体）
@@ -116,6 +117,7 @@ python -m kitebench.sim.collect --episodes 20 --out episodes
 ## 许可
 
 MIT，见 [`LICENSE`](LICENSE)。
+
 
 
 
