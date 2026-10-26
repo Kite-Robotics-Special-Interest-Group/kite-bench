@@ -46,7 +46,7 @@ src/kitebench/
     oracle.py    # 脚本化拾取（IK + 位置伺服）
     sorting.py   # 3 类物体分拣场景与 pick-and-place
     industrial.py# 工业外观（传送带/料筐/安全线）
-unity/KiteWidowX/  # Unity 工程源码（场景/脚本/URDF），见 docs/unity-setup.md
+（Unity 工程已迁至 kite-showcase：成果展示与可视化仓库）
 docs/
   design.md            # 设计与指标口径
   roadmap.md           # 里程碑
@@ -65,7 +65,7 @@ tests/
 | 为什么做这个、指标怎么定义 | [`docs/design.md`](docs/design.md) |
 | 现在做到哪、下一步 | [`docs/roadmap.md`](docs/roadmap.md) |
 | 模型对输入扰动有多敏感 | [`docs/perturb-baseline.md`](docs/perturb-baseline.md) |
-| Unity 怎么装、怎么跑 | [`docs/unity-setup.md`](docs/unity-setup.md) |
+| Unity 怎么装、怎么跑、视频怎么录 | [kite-showcase](https://github.com/Kite-Robotics-Special-Interest-Group/kite-showcase) |
 | MuJoCo 场景与数据采集 | [`docs/mujoco-sim.md`](docs/mujoco-sim.md) |
 | 官方 SimplerEnv 复现进度 | [`docs/official-env-setup.md`](docs/official-env-setup.md) |
 
@@ -104,3 +104,4 @@ python -m kitebench.sim.collect --episodes 20 --out episodes
 ## 许可
 
 MIT，见 [`LICENSE`](LICENSE)。
+

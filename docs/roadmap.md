@@ -62,8 +62,8 @@
 
 ## M7 · 工程化与文档（已完成）
 
-- Unity 工程源码入库：`unity/KiteWidowX/`（脚本、编辑器工具、场景、URDF+STL，4.2 MB）
-- 教程：`docs/unity-setup.md`（安装 → 打开工程 → 依赖 → URDF 六坑 → 构建播放器 → TCP 协议 → MCP 配置 → 排障）
+- Unity 工程与教程已迁至独立仓库 **kite-showcase**（成果展示与可视化）：`unity/KiteWidowX/` + `docs/unity-setup.md` + 视频渲染规范
+- 渲染脚本：`kite-showcase/scripts/render_demo.py`（模型闭环 → 双视角 MP4 + 字幕）
 - 周报：`docs/weekly/2026-10-26.md`
 
 ## M4 · 闭环鲁棒性评测
@@ -77,6 +77,7 @@
 - 时序扰动（延迟/丢帧）与语言改写
 - 残差动作 + PPO 精修（MuJoCo 批量环境）
 - Moer Engine 离线渲染，生成对外演示视频
+
 
 
 
