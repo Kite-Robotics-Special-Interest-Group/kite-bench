@@ -36,15 +36,38 @@
 src/kitebench/
   perturb.py     # 光度/几何/遮挡扰动（纯 PIL，无仿真依赖）
   metrics.py     # 漂移与成功率指标
+  eval.py        # 扰动扫描（任意策略适配）
+  train.py       # 动作头微调（特征预计算 + 后 8 层）
+  rollout.py     # MuJoCo 闭环评测（抓取）
+  demo_ik.py     # 示教流形最近邻执行器（消除 IK 分支歧义）
   sim/
     assets.py    # 拉取/定位 MuJoCo WidowX-250 模型
     scene.py     # 场景、两路 224×224 相机、观测
     oracle.py    # 脚本化拾取（IK + 位置伺服）
+    sorting.py   # 3 类物体分拣场景与 pick-and-place
+    industrial.py# 工业外观（传送带/料筐/安全线）
+unity/KiteWidowX/  # Unity 工程源码（场景/脚本/URDF），见 docs/unity-setup.md
 docs/
-  design.md      # 设计与指标口径
-  roadmap.md     # 里程碑
+  design.md            # 设计与指标口径
+  roadmap.md           # 里程碑
+  perturb-baseline.md  # 输入扰动基线表
+  unity-setup.md       # Unity 安装 → 配置 → MCP → 使用
+  mujoco-sim.md        # MuJoCo 场景与采集
+  unity-sim.md         # Unity 桥协议与踩坑（历史版本）
+  official-env-setup.md# 官方 SimplerEnv 复现现场
 tests/
 ```
+
+文档索引：
+
+| 想了解 | 看 |
+| --- | --- |
+| 为什么做这个、指标怎么定义 | [`docs/design.md`](docs/design.md) |
+| 现在做到哪、下一步 | [`docs/roadmap.md`](docs/roadmap.md) |
+| 模型对输入扰动有多敏感 | [`docs/perturb-baseline.md`](docs/perturb-baseline.md) |
+| Unity 怎么装、怎么跑 | [`docs/unity-setup.md`](docs/unity-setup.md) |
+| MuJoCo 场景与数据采集 | [`docs/mujoco-sim.md`](docs/mujoco-sim.md) |
+| 官方 SimplerEnv 复现进度 | [`docs/official-env-setup.md`](docs/official-env-setup.md) |
 
 ## 快速开始
 
