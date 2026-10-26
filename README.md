@@ -68,6 +68,7 @@ tests/
 | Unity 怎么装、怎么跑、视频怎么录 | [kite-showcase](https://github.com/Kite-Robotics-Special-Interest-Group/kite-showcase) |
 | MuJoCo 场景与数据采集 | [`docs/mujoco-sim.md`](docs/mujoco-sim.md) |
 | 官方 SimplerEnv 复现进度 | [`docs/official-env-setup.md`](docs/official-env-setup.md) |
+| 团队周报 | [kite-weekly](https://github.com/Kite-Robotics-Special-Interest-Group/kite-weekly) |
 
 ## 快速开始
 
@@ -104,4 +105,5 @@ python -m kitebench.sim.collect --episodes 20 --out episodes
 ## 许可
 
 MIT，见 [`LICENSE`](LICENSE)。
+
 
