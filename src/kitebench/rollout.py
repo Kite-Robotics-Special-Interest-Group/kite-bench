@@ -23,7 +23,7 @@ INSTRUCTION = "pick up the red block"
 
 
 def rollout(model, data, policy, chunks: int, steps_per_action: int = 25,
-            exec_steps: int = 10) -> dict:
+            exec_steps: int = 10, demo_ik=None) -> dict:
     import mujoco
 
     reset(model, data)
@@ -48,7 +48,10 @@ def rollout(model, data, policy, chunks: int, steps_per_action: int = 25,
             if hold > 0:
                 hold -= 1
                 target = data.xpos[gid].copy()
-            q = ik(model, data, target, data.qpos[0:6].copy(), iters=200)
+            if demo_ik is not None:
+                q = demo_ik.solve(target, data.qpos[0:6].copy())
+            else:
+                q = ik(model, data, target, data.qpos[0:6].copy(), iters=200)
             data.ctrl[0:6] = q
             data.ctrl[6] = GRIP_CLOSED if closing else GRIP_OPEN
             for _ in range(steps_per_action):
@@ -70,6 +73,10 @@ def main() -> int:
     parser.add_argument("--start", type=int, default=300, help="first episode seed (unseen)")
     parser.add_argument("--chunks", type=int, default=6)
     parser.add_argument("--steps", type=int, default=25)
+    parser.add_argument("--demo-source", type=Path, default=Path("out/episodes_v4"),
+                        help="episodes used by --demo-ik")
+    parser.add_argument("--demo-ik", action="store_true",
+                        help="map EE targets to the nearest demo joint configuration")
     parser.add_argument("--exec", type=int, default=10,
                         help="execute only the first N actions of each chunk")
     parser.add_argument("--out", type=Path, default=None)
@@ -80,6 +87,10 @@ def main() -> int:
     from kitebench.eval import XVLAAdapter
 
     policy = XVLAAdapter(args.model, steps=5, seed=0, head=args.head)
+    demo_ik = None
+    if args.demo_ik:
+        from kitebench.demo_ik import DemoIK
+        demo_ik = DemoIK(args.demo_source)
     results = []
     for seed in range(args.start, args.start + args.episodes):
         rng = np.random.default_rng(seed)
@@ -87,7 +98,7 @@ def main() -> int:
                    CUBE_XY[1] + float(rng.uniform(-0.05, 0.05)))
         model = build(cube_xy)
         data = mujoco.MjData(model)
-        res = rollout(model, data, policy, args.chunks, args.steps, args.exec)
+        res = rollout(model, data, policy, args.chunks, args.steps, args.exec, demo_ik)
         res["cube_xy"] = [round(cube_xy[0], 3), round(cube_xy[1], 3)]
         results.append(res)
         print(json.dumps({"seed": seed, **res}), flush=True)
@@ -102,6 +113,8 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
 
 
 
