@@ -1,4 +1,4 @@
-"""Closed-loop evaluation of the sorting task (pick the named object, place on its pad)."""
+﻿"""Closed-loop evaluation of the sorting task (pick the named object, place on its pad)."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def rollout(model, data, policy, instruction: str, chunks: int = 10,
                 hold -= 1
                 target = data.xpos[gid].copy()
             if demo_ik is not None:
-                q = demo_ik.solve(target, data.qpos[0:6].copy())
+                q = demo_ik.solve(chunk[step : step + 3, 0:3], data.qpos[0:6].copy())
             else:
                 from kitebench.sim.oracle import ik
 
@@ -105,3 +105,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

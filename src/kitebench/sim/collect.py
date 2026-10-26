@@ -49,12 +49,17 @@ def rot_to_6d(r: np.ndarray) -> np.ndarray:
 
 
 def collect_episode(seed: int, out_dir: Path, frame_every: int = 4,
-                    steps_per_phase: int = 600, record_every: int = 25) -> dict:
+                    steps_per_phase: int = 600, record_every: int = 25,
+                    industrial: bool = False) -> dict:
     import mujoco
 
     rng = np.random.default_rng(seed)
     cube_xy, variant = vary(rng)
-    model = build(cube_xy, variant)
+    if industrial:
+        from kitebench.sim.industrial import build as build_industrial
+        model = build_industrial(cube_xy)
+    else:
+        model = build(cube_xy, variant)
     data = mujoco.MjData(model)
     episode = run_pick(model, data, steps_per_phase=steps_per_phase, record_every=record_every)
 
@@ -110,6 +115,8 @@ def main() -> int:
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--out", type=Path, default=Path("episodes"))
     parser.add_argument("--record-every", type=int, default=25)
+    parser.add_argument("--industrial", action="store_true",
+                        help="use the industrial dressing (conveyor + bin)")
     parser.add_argument("--frame-every", type=int, default=4)
     parser.add_argument("--steps-per-phase", type=int, default=600)
     args = parser.parse_args()
@@ -118,7 +125,7 @@ def main() -> int:
     ok = 0
     for i in range(args.start, args.start + args.episodes):
         meta = collect_episode(i, args.out, args.frame_every, args.steps_per_phase,
-                                  args.record_every)
+                                  args.record_every, args.industrial)
         ok += int(meta["success"])
         print(json.dumps({"seed": i, "success": meta["success"],
                           "cube_z": meta["cube_z_final"]}, ensure_ascii=False))
@@ -128,6 +135,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 
 

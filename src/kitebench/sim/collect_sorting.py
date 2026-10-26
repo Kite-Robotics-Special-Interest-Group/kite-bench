@@ -44,7 +44,8 @@ def collect_episode(seed: int, out_dir: Path, frame_every: int = 4,
     ep_dir = out_dir / f"{seed:04d}"
     (ep_dir / "obs").mkdir(parents=True, exist_ok=True)
     actions = np.stack([
-        np.concatenate([s["ee"], rot_to_6d(s["ee_rot"]), [s["grip"]]]) for s in episode.states
+        np.concatenate([s["ee"], rot_to_6d(s["ee_rot"]),
+                       [1.0 if s["grip"] < 0.026 else 0.0]]) for s in episode.states
     ]).astype(np.float32)
     proprio = np.stack([
         np.concatenate([s["qpos"][0:6], [s["grip"]]]) for s in episode.states
@@ -103,5 +104,6 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 
