@@ -96,6 +96,17 @@ python -m kitebench.sim.collect --episodes 20 --out episodes
 
 每条 episode 随机化方块位置（±5 cm）、桌垫/方块颜色、光照强度与相机机位；动作标签是绝对末端位姿 `[ee_xyz(3), rot6d(6), grip(1)]`。
 
+## 本地路径
+
+| 内容 | 路径 |
+| --- | --- |
+| 本仓库 | [`D:\JLU_tools\kite-bench`](file:///D:/JLU_tools/kite-bench) |
+| 主仓 | [`D:\JLU_tools\Kite`](file:///D:/JLU_tools/Kite) |
+| Unity / 视频 | [`D:\JLU_tools\kite-showcase`](file:///D:/JLU_tools/kite-showcase) |
+| 周报 | [`D:\JLU_tools\kite-weekly`](file:///D:/JLU_tools/kite-weekly) |
+| 示教数据 | [`out/episodes_v4`](file:///D:/JLU_tools/kite-bench/out/episodes_v4) |
+| 微调权重 | [`out/head_v7.pt`](file:///D:/JLU_tools/kite-bench/out/head_v7.pt) |
+
 ## 与 Kite 的关系
 
 - `Kite`：端侧 VLA 模型与运行时（机器人本体）
@@ -105,5 +116,6 @@ python -m kitebench.sim.collect --episodes 20 --out episodes
 ## 许可
 
 MIT，见 [`LICENSE`](LICENSE)。
+
 
 
