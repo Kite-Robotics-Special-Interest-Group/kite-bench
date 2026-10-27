@@ -1,4 +1,4 @@
-# 官方环境复现（SimplerEnv）— 现场状态
+﻿# 官方环境复现（SimplerEnv）— 现场状态
 
 停机会话前的进度，下次从这里继续。
 
@@ -52,3 +52,31 @@ pip install -e /mnt/d/JLU_tools/official/SimplerEnv
 没有 WidowX。要接 WidowX 需 `pip install urdf2webots`，把已有的 Interbotix URDF + STL 转成 PROTO。
 
 用途：作为"换引擎"的鲁棒性横轴（比 Unity 轻），**不能替代**官方 SimplerEnv 基线。
+
+## 2026-10-27 更新：环境装好了，卡在 SAPIEN 的 WSL 渲染
+
+已完成（WSL Ubuntu，Python 3.10）：
+
+| 项 | 状态 |
+| --- | --- |
+| torch 2.9.1+cu128 | ✅ `cc (12, 0)`，sm_120 可用（2.5.1+cu121 不支持 Blackwell，已升级） |
+| ManiSkill2_real2sim @54ae2e0 | ✅ 646 个文件 / 221.6 MB，用 `raw.githubusercontent.com` 逐文件下载（codeload 只有 20 KB/s） |
+| simpler_env | ✅ 已装（含 sapien 2.2.2） |
+| 评测服务端 | ✅ `deploy.py` 能加载官方权重并在 :8010 提供服务 |
+
+**硬阻塞**：SAPIEN 的 Vulkan 渲染器在 WSL 里无法创建设备：
+
+```
+sapien.core.SapienRenderer() ->
+RuntimeError: vk::PhysicalDevice::createDeviceUnique: ErrorExtensionNotPresent
+```
+
+- sapien 的 `__init__` 明确警告 `SAPIEN renderer is not supported on WSL`
+- sapien 2.2.2 只有 manylinux 轮子，**Windows 装不了**（PyPI 只列出 cp37–cp311 linux）
+- 所以 SimplerEnv 在本机（Windows + WSL）都无法渲染观测
+
+**要跑通只有三条路**：
+
+1. 一台独立 Linux + NVIDIA 机器（或云 GPU），把 `~/official` 整个搬过去（依赖已就绪）
+2. 双系统 / 原生 Linux 分区
+3. 放弃官方口径，用 MuJoCo（已有 8/8）与 Unity（演示）代替
