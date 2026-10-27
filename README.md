@@ -1,4 +1,6 @@
-﻿# kite-bench
+﻿> **状态（2026-10-27）：仿真线收尾，转真机。** 结论与可复用资产见 [`docs/handoff.md`](docs/handoff.md)。
+
+# kite-bench
 
 > VLA 的仿真环境和输入鲁棒性评测台。物理用 MuJoCo，外观扰动可以接 Unity / Moer Engine。
 
@@ -69,6 +71,7 @@ tests/
 | MuJoCo 场景与数据采集 | [`docs/mujoco-sim.md`](docs/mujoco-sim.md) |
 | 官方 SimplerEnv 复现进度 | [`docs/official-env-setup.md`](docs/official-env-setup.md) |
 | 团队周报 | [kite-weekly](https://github.com/Kite-Robotics-Special-Interest-Group/kite-weekly) |
+| 收尾结论、可带走资产 | [`docs/handoff.md`](docs/handoff.md) |
 
 ## 快速开始
 
@@ -117,6 +120,7 @@ python -m kitebench.sim.collect --episodes 20 --out episodes
 ## 许可
 
 MIT，见 [`LICENSE`](LICENSE)。
+
 
 
 
